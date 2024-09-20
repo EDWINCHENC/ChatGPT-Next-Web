@@ -219,6 +219,15 @@ export class ChatGPTApi implements LLMApi {
           messages.push({ role: v.role, content });
       }
 
+      // 添加一个简单的辅助函数
+      function shouldIncludeMaxTokens(model: string) {
+        const shouldInclude = isVisionModel(model) && !model.includes("claude-3");
+        console.log(`[Max Tokens] Model: ${model}`);
+        console.log(`[Max Tokens] Is Vision Model: ${isVisionModel(model)}`);
+        console.log(`[Max Tokens] Should Include: ${shouldInclude}`);
+        return shouldInclude;
+      }
+
       // O1 not support image, tools (plugin in ChatGPTNextWeb) and system, stream, logprobs, temperature, top_p, n, presence_penalty, frequency_penalty yet.
       requestPayload = {
         messages,
@@ -233,8 +242,13 @@ export class ChatGPTApi implements LLMApi {
       };
 
       // add max_tokens to vision model
-      if (visionModel) {
-        requestPayload["max_tokens"] = Math.max(modelConfig.max_tokens, 4000);
+
+      // 只在需要时添加 max_tokens
+      if (shouldIncludeMaxTokens(modelConfig.model)) {
+        requestPayload.max_tokens = Math.max(modelConfig.max_tokens, 4000);
+        console.log(`[Max Tokens] Added max_tokens: ${requestPayload.max_tokens}`);
+      } else {
+        console.log("[Max Tokens] Not added to payload");
       }
     }
 
