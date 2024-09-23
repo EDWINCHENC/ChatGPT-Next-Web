@@ -219,12 +219,19 @@ export class ChatGPTApi implements LLMApi {
           messages.push({ role: v.role, content });
       }
 
-      // 添加一个简单的辅助函数
+      // 定义一个包含特定视觉模型关键词的数组
+      const specificVisionModelKeywords = ["preview"];
+      // 修改辅助函数
       function shouldIncludeMaxTokens(model: string) {
-        const shouldInclude = isVisionModel(model) && !model.includes("claude-3");
-        console.log(`[Max Tokens] Model: ${model}`);
-        console.log(`[Max Tokens] Is Vision Model: ${isVisionModel(model)}`);
-        console.log(`[Max Tokens] Should Include: ${shouldInclude}`);
+        const isVision = isVisionModel(model);
+        const isSpecificVisionModel = specificVisionModelKeywords.some(keyword => model.toLowerCase().includes(keyword));
+        const shouldInclude = isVision && isSpecificVisionModel;
+
+        console.log(`模型: ${model}`);
+        console.log(`是否为视觉模型: ${isVision}`);
+        console.log(`是否为特定视觉模型: ${isSpecificVisionModel}`);
+        console.log(`是否应包含最大令牌数: ${shouldInclude}`);
+
         return shouldInclude;
       }
 
