@@ -219,19 +219,12 @@ export class ChatGPTApi implements LLMApi {
           messages.push({ role: v.role, content });
       }
 
-      // 定义一个包含特定视觉模型关键词的数组
-      const specificVisionModelKeywords = ["preview"];
-      // 修改辅助函数
+      // 添加一个简单的辅助函数
       function shouldIncludeMaxTokens(model: string) {
-        const isVision = isVisionModel(model);
-        const isSpecificVisionModel = specificVisionModelKeywords.some(keyword => model.toLowerCase().includes(keyword));
-        const shouldInclude = isVision && isSpecificVisionModel;
-
-        console.log(`模型: ${model}`);
-        console.log(`是否为视觉模型: ${isVision}`);
-        console.log(`是否为特定视觉模型: ${isSpecificVisionModel}`);
-        console.log(`是否应包含max_tokens: ${shouldInclude}`);
-
+        const shouldInclude = isVisionModel(model) && !model.includes("claude-3");
+        console.log(`[Max Tokens] Model: ${model}`);
+        console.log(`[Max Tokens] Is Vision Model: ${isVisionModel(model)}`);
+        console.log(`[Max Tokens] Should Include: ${shouldInclude}`);
         return shouldInclude;
       }
 
@@ -248,7 +241,8 @@ export class ChatGPTApi implements LLMApi {
         // Please do not ask me why not send max_tokens, no reason, this param is just shit, I dont want to explain anymore.
       };
 
-      // add max_tokens to vision models
+      // add max_tokens to vision model
+
       // 只在需要时添加 max_tokens
       if (shouldIncludeMaxTokens(modelConfig.model)) {
         requestPayload.max_tokens = Math.max(modelConfig.max_tokens, 4000);
@@ -256,6 +250,7 @@ export class ChatGPTApi implements LLMApi {
       } else {
         console.log("[Max Tokens] Not added to payload");
       }
+    }
 
     console.log("[Request] openai payload: ", requestPayload);
 
